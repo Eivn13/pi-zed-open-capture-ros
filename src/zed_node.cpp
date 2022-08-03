@@ -1,5 +1,4 @@
 #include <string>
-
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
 #include <opencv2/opencv.hpp>
@@ -71,18 +70,19 @@ public:
         return camera->getLastFrame(1);
     }
 
-    sl_oc::video::VideoCapture *camera;
-    sl_oc::sensors::SensorCapture *sensor;
+    sl_oc::video::VideoCapture* camera;
+    sl_oc::sensors::SensorCapture* sensor;
 };
 
 image_transport::Publisher left_image_pub;
 image_transport::Publisher right_image_pub;
+image_transport::Publisher whole_image_pub;
 ros::Publisher sensor_pub;
 sl_oc::video::RESOLUTION gResolution;
 sl_oc::video::FPS gFps;
-StereoCamera *zed;
+StereoCamera* zed;
 
-void image_callback(const ros::TimerEvent &timer_event)
+void image_callback(const ros::TimerEvent& timer_event)
 {
     static double last_timestamp = 0;
     const sl_oc::video::Frame frame = zed->getLastFrame();
@@ -92,11 +92,11 @@ void image_callback(const ros::TimerEvent &timer_event)
         cv::Mat frameYUV(frame.height, frame.width, CV_8UC2, frame.data);
         cv::Mat frameBGR(frame.height, frame.width, CV_8UC3, cv::Scalar(0, 0, 0));
         cv::cvtColor(frameYUV, frameBGR, cv::COLOR_YUV2BGR_YUYV);
-        cv::Mat left_image, right_image;
-        left_image = frameBGR(cv::Rect(0, 0, frame.width / 2, frame.height));
-        right_image = frameBGR(cv::Rect(frame.width / 2, 0, frame.width / 2, frame.height));
+//        cv::Mat left_image, right_image;
+//        left_image = frameBGR(cv::Rect(0, 0, frame.width / 2, frame.height));
+//        right_image = frameBGR(cv::Rect(frame.width / 2, 0, frame.width / 2, frame.height));
 
-        cv_bridge::CvImage cv_left_image;
+/*        cv_bridge::CvImage cv_left_image;
         cv_left_image.image = left_image;
         cv_left_image.encoding = "bgr8";
         cv_left_image.header.frame_id = "left_frame";
@@ -109,10 +109,19 @@ void image_callback(const ros::TimerEvent &timer_event)
         cv_right_image.header.frame_id = "right_frame";
         cv_right_image.header.stamp = ros::Time(last_timestamp * 1e-9);
         right_image_pub.publish(cv_right_image.toImageMsg());
+*/  
+	cv::Mat image;
+	image = frameBGR;
+	cv_bridge::CvImage cv_image;
+	cv_image.image = image;
+	cv_image.encoding = "bgr8";
+	cv_image.header.frame_id = "whole_frame";
+	cv_image.header.stamp = ros::Time(last_timestamp * 1e-9);
+	whole_image_pub.publish(cv_image.toImageMsg());
     }
 }
 
-void sensor_callback(const ros::TimerEvent &timer_event)
+void sensor_callback(const ros::TimerEvent& timer_event)
 {
     const sl_oc::sensors::data::Imu imuData = zed->getLastIMUData();
     if (imuData.valid == sl_oc::sensors::data::Imu::NEW_VAL) // Uncomment to use only data syncronized with the video frames
@@ -156,7 +165,7 @@ void correctFramerate(int resolution)
     }
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     ros::init(argc, argv, "zed_node");
     ros::NodeHandle nh;
@@ -164,8 +173,9 @@ int main(int argc, char **argv)
 
     // setup publisher stuff
     image_transport::ImageTransport it(nh);
-    left_image_pub = it.advertise("left/image_raw", 10);
-    right_image_pub = it.advertise("right/image_raw", 10);
+//    left_image_pub = it.advertise("left/image_raw", 10);
+//    right_image_pub = it.advertise("right/image_raw", 10);
+    whole_image_pub = it.advertise("whole/image_raw", 1);
     sensor_pub = nh.advertise<sensor_msgs::Imu>("imu/raw", 100);
 
     ros::Timer image_timer;
@@ -180,11 +190,11 @@ int main(int argc, char **argv)
     {
         image_timer = nh.createTimer(ros::Duration(0.01), image_callback);
     }
-    if (zed->sensor)
+/*    if (zed->sensor)
     {
         sensor_timer = nh.createTimer(ros::Duration(0.001), sensor_callback);
     }
-    if (!zed->camera && !zed->sensor)
+*/    if (!zed->camera && !zed->sensor)
     {
         ROS_ERROR("Fail to Initialize the camera");
         return EXIT_FAILURE;

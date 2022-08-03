@@ -1,22 +1,11 @@
-# zed-open-capture-ros
-## Introduction
-A simple ros driver for ZED using zed-open-capture which doesn't depend on CUDA
-## Dependencies
+Na spravnu funkcnost tohto repozitara treba nainstalovat zed-open-capture https://github.com/stereolabs/zed-open-capture
 
-* ros (Kinetic/Melodic/Noetic)
-* [zed-open-capture](https://github.com/stereolabs/zed-open-capture)
+Tuto cast systemu som pustal s prikazom roslaunch zed-open-capture-ros new\_zed\_node.launch resolution:=2
 
-## Usage
+Parameter resolution nastavuje v akom rozliseni a akou frekvenciou bude posielat kamera obraz. 0 == HD2K a 15 fps, 1 == HD1080 a 30 fps, 2 == HD720 a 60 fps, 3 == VGA a 100 fps.
 
-Complie:
-``` bash
-catkin_make
-```
+Subor src/zed\_node.cpp posiela cez ROS zbernice obraz "/zed\_2/whole/image\_raw" a imu data "/zed\_2/imu/raw". Obraz vznika spojenim obrazu z lavej a pravej sosovky.
 
-Run:
-``` bash
-source devel/setup.bash
-roslaunch zed-open-capture-ros zed_node.launch
-```
+Subor src/zed\_node\_multiple\_cameras.cpp som vobec nepouzival ale mozno sa bude hodit, tak som ho nezmazal.
 
-
+TODO: prerobit v CMakeLists.txt linky, aby sa dynamicky menili podla user name.
