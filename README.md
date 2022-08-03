@@ -1,4 +1,4 @@
-Na spravnu funkcnost tohto repozitara treba nainstalovat zed-open-capture https://github.com/stereolabs/zed-open-capture
+Na spravnu funkcnost tohto repozitara treba nainstalovat zed-open-capture https://github.com/stereolabs/zed-open-capture. Treba ho nainstalovat do /home/$USER/.
 
 Tuto cast systemu som pustal s prikazom roslaunch zed-open-capture-ros new\_zed\_node.launch resolution:=2
 
